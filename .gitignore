@@ -15,10 +15,10 @@ next-env.d.ts
 .env.*.local
 
 # db (IMPORTANT: never commit the encrypted vault)
-data/*.db
-data/*.db-journal
-data/*.db-wal
-data/*.db-shm
+# data/*.db
+# data/*.db-journal
+# data/*.db-wal
+# data/*.db-shm
 
 # logs
 npm-debug.log*
