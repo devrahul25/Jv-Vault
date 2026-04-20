@@ -10,7 +10,43 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const db = getDb();
-  const workspaces = db.prepare("SELECT id, name FROM workspaces").all();
+  let workspaces = db.prepare("SELECT id, name FROM workspaces").all();
+  
+  // If no workspaces exist and this is the master user, create the primary one and seed it
+  if (workspaces.length === 0 && session.email === "team@jaiveeru.co.in") {
+    const wsId = `ws_${Date.now()}`;
+    db.prepare("INSERT INTO workspaces (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)")
+      .run(wsId, "Primary Workspace", Date.now(), Date.now());
+    
+    // Seed initial data
+    const { JV_CLIENT_SEED, DEFAULT_SECTIONS } = require("../../../lib/vault");
+    const { encrypt } = require("../../../lib/crypto");
+    const { currentKey } = require("../../../lib/auth");
+    const { newId } = require("../../../lib/id");
+    const key = currentKey();
+    
+    if (key) {
+      JV_CLIENT_SEED.forEach((seed: any, idx: number) => {
+        const id = newId("cli");
+        db.prepare(
+          `INSERT INTO clients (id, workspace_id, name, position, attrs_ct, sections_ct, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(
+          id,
+          wsId,
+          seed.name,
+          idx,
+          encrypt(JSON.stringify(seed.attrs || {}), key),
+          encrypt(JSON.stringify(DEFAULT_SECTIONS), key),
+          Date.now(),
+          Date.now()
+        );
+      });
+    }
+    
+    workspaces = db.prepare("SELECT id, name FROM workspaces").all();
+  }
+
   return NextResponse.json({ workspaces });
 }
 

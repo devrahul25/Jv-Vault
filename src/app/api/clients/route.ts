@@ -31,13 +31,25 @@ function serialize(r: ClientRow, key: Buffer): ClientRecord {
   };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const key = currentKey();
   if (!key) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  
+  const { searchParams } = new URL(req.url);
+  const workspaceId = searchParams.get("workspaceId");
+  
   const db = getDb();
-  const rows = db
-    .prepare("SELECT * FROM clients ORDER BY position ASC, created_at ASC")
-    .all() as ClientRow[];
+  let query = "SELECT * FROM clients";
+  let params: any[] = [];
+  
+  if (workspaceId) {
+    query += " WHERE workspace_id = ?";
+    params.push(workspaceId);
+  }
+  
+  query += " ORDER BY position ASC, created_at ASC";
+  
+  const rows = db.prepare(query).all(...params) as ClientRow[];
   return NextResponse.json({ clients: rows.map((r) => serialize(r, key)) });
 }
 

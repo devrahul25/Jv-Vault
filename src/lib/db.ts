@@ -2,7 +2,8 @@ import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-const DB_PATH = process.env.VAULT_DB_PATH || "./data/vault.db";
+const RAW_PATH = process.env.VAULT_DB_PATH || "./data/vault.db";
+const DB_PATH = path.resolve(process.cwd(), RAW_PATH);
 
 let _db: Database.Database | null = null;
 

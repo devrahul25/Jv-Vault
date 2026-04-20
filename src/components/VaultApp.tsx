@@ -133,7 +133,10 @@ export default function VaultApp() {
     const r = await fetch("/api/clients", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: "New client" }),
+      body: JSON.stringify({ 
+        name: "New client", 
+        workspace_id: currentWorkspace 
+      }),
     });
     if (r.ok) {
       const { client } = await r.json();
