@@ -6,8 +6,12 @@ import TopTable from "./TopTable";
 import ClientDrawer from "./ClientDrawer";
 import Sidebar from "./Sidebar";
 import ShareModal from "./ShareModal";
+import TasksList from "./TasksList";
+import MembersManager from "./MembersManager";
+import GlobalControls from "./GlobalControls";
 
 export default function VaultApp() {
+  const [activeTab, setActiveTab] = useState<"table" | "tasks" | "members" | "settings">("table");
   const [columns, setColumns] = useState<ColumnDef[]>([]);
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -220,71 +224,106 @@ export default function VaultApp() {
       <Sidebar
         workspaces={workspaces}
         currentWorkspace={currentWorkspace}
-        onSelectWorkspace={setCurrentWorkspace}
+        onSelectWorkspace={(ws) => {
+          setCurrentWorkspace(ws);
+          setActiveTab("table");
+        }}
         onAddWorkspace={handleAddWorkspace}
         onDeleteWorkspace={handleDeleteWorkspace}
         user={user}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
       />
       <div className="flex-1 flex flex-col min-w-0 bg-[#121210]">
-        <TopBar 
-          currentWsName={currentWs?.name} 
-          onLogout={logout} 
-          presence={presence}
-          onShare={() => setShowShare(true)}
-        />
+        {!["members", "settings"].includes(activeTab) && (
+          <TopBar 
+            currentWsName={currentWs?.name} 
+            onLogout={logout} 
+            presence={presence}
+            onShare={() => setShowShare(true)}
+          />
+        )}
 
-        <main className="flex-1 overflow-auto px-6 py-10 sm:px-12">
-          <div className="mx-auto w-full max-w-[1400px]">
-            <header className="mb-8">
-              <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3 mb-6">
-                🌐 {currentWs?.name || "Workspace"}
-              </h1>
-              <div className="flex items-center justify-between border-b border-ink-800 pb-2 text-sm text-ink-300">
-                <div className="flex items-center gap-6">
-                   <button className="text-white border-b-2 border-white pb-2 -mb-2 font-medium flex items-center gap-2">
-                     <span>🗂</span> Table
-                   </button>
-                   {!canEdit && (
-                     <button 
-                        onClick={requestEditAccess}
-                        disabled={requested}
-                        className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 disabled:opacity-50"
-                     >
-                       {requested ? "Request pending..." : "Request edit access"}
-                     </button>
-                   )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="relative w-64 text-ink-300">
-                    <input
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search…"
-                      className="w-full rounded-md border border-ink-800 bg-ink-900 px-8 py-1 text-sm text-white placeholder:text-ink-400 focus:border-ink-600 focus:outline-none"
-                    />
-                    <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400">
-                      ⌕
-                    </span>
+        <main className="flex-1 overflow-auto">
+          {activeTab === "members" ? (
+            <MembersManager />
+          ) : activeTab === "settings" ? (
+            <GlobalControls />
+          ) : (
+            <div className="px-6 py-10 sm:px-12">
+              <div className="mx-auto w-full max-w-[1400px]">
+                <header className="mb-8">
+                  <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3 mb-6">
+                    🌐 {currentWs?.name || "Workspace"}
+                  </h1>
+                  <div className="flex items-center justify-between border-b border-ink-800 pb-2 text-sm text-ink-300">
+                    <div className="flex items-center gap-6">
+                       <button 
+                        onClick={() => setActiveTab("table")}
+                        className={`pb-2 -mb-2 font-medium flex items-center gap-2 transition-all ${
+                         activeTab === "table" ? "text-white border-b-2 border-white" : "text-ink-500 hover:text-ink-300"
+                        }`}
+                       >
+                         <span>🗂</span> Table
+                       </button>
+                       <button 
+                        onClick={() => setActiveTab("tasks")}
+                        className={`pb-2 -mb-2 font-medium flex items-center gap-2 transition-all ${
+                         activeTab === "tasks" ? "text-white border-b-2 border-white" : "text-ink-500 hover:text-ink-300"
+                        }`}
+                       >
+                         <span>✅</span> Tasks
+                       </button>
+                       {!canEdit && activeTab === "table" && (
+                         <button 
+                            onClick={requestEditAccess}
+                            disabled={requested}
+                            className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 disabled:opacity-50"
+                         >
+                           {requested ? "Request pending..." : "Request edit access"}
+                         </button>
+                       )}
+                    </div>
+                    {activeTab === "table" && (
+                      <div className="flex items-center gap-4">
+                        <div className="relative w-64 text-ink-300">
+                          <input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search…"
+                            className="w-full rounded-md border border-ink-800 bg-ink-900 px-8 py-1 text-sm text-white placeholder:text-ink-400 focus:border-ink-600 focus:outline-none"
+                          />
+                          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400">
+                            ⌕
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </div>
-            </header>
+                </header>
 
-            {loading ? (
-              <div className="text-ink-400">Loading…</div>
-            ) : (
-              <TopTable
-                columns={columns}
-                clients={filtered}
-                onColumnsChange={saveColumns}
-                onAddClient={addClient}
-                onOpenClient={(id) => setOpenId(id)}
-                onPatchClient={patchClient}
-                onDeleteClient={deleteClient}
-                readOnly={!canEdit}
-              />
-            )}
-          </div>
+                {loading ? (
+                  <div className="text-ink-400">Loading…</div>
+                ) : activeTab === "table" ? (
+                  <TopTable
+                    columns={columns}
+                    clients={filtered}
+                    onColumnsChange={saveColumns}
+                    onAddClient={addClient}
+                    onOpenClient={(id) => setOpenId(id)}
+                    onPatchClient={patchClient}
+                    onDeleteClient={deleteClient}
+                    readOnly={!canEdit}
+                  />
+                ) : (
+                  <TasksList 
+                    isMaster={user?.isMaster || false} 
+                    userEmail={user?.email || ""}
+                  />
+                )}
+              </div>
+            </div>
+          )}
         </main>
       </div>
 

@@ -5,6 +5,8 @@ export default function Sidebar({
   onAddWorkspace,
   onDeleteWorkspace,
   user,
+  activeTab,
+  onSelectTab,
 }: {
   workspaces: { id: string; name: string }[];
   currentWorkspace: string;
@@ -12,6 +14,8 @@ export default function Sidebar({
   onAddWorkspace: () => void;
   onDeleteWorkspace: (id: string) => void;
   user?: any;
+  activeTab: string;
+  onSelectTab: (tab: string) => void;
 }) {
   const currentWs = workspaces.find((w) => w.id === currentWorkspace);
   
@@ -38,12 +42,22 @@ export default function Sidebar({
               Management
             </div>
             <div className="space-y-0.5 mt-1">
-               <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-ink-900 text-ink-200 group">
-                 <span className="text-ink-400 group-hover:text-ink-100">👥</span>
+               <button 
+                onClick={() => onSelectTab("members")}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-all group ${
+                  activeTab === "members" ? "bg-ink-800 text-ink-100" : "hover:bg-ink-900 text-ink-300"
+                }`}
+               >
+                 <span className={`text-ink-400 group-hover:text-ink-100 ${activeTab === "members" ? "text-accent-500" : ""}`}>👥</span>
                  <span>Members & Roles</span>
                </button>
-               <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-ink-900 text-ink-200 group">
-                 <span className="text-ink-400 group-hover:text-ink-100">🛡️</span>
+               <button 
+                onClick={() => onSelectTab("settings")}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-all group ${
+                  activeTab === "settings" ? "bg-ink-800 text-ink-100" : "hover:bg-ink-900 text-ink-300"
+                }`}
+               >
+                 <span className={`text-ink-400 group-hover:text-ink-100 ${activeTab === "settings" ? "text-accent-500" : ""}`}>🛡️</span>
                  <span>Global Controls</span>
                </button>
             </div>

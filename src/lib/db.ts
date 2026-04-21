@@ -127,6 +127,30 @@ export function getDb(): Database.Database {
     );
     CREATE INDEX IF NOT EXISTS idx_clients_workspace ON clients(workspace_id);
     CREATE INDEX IF NOT EXISTS idx_clients_position ON clients(workspace_id, position);
+
+    CREATE TABLE IF NOT EXISTS tasks (
+      id TEXT PRIMARY KEY,
+      client_id TEXT NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+      assigned_email TEXT NOT NULL,
+      creator_email TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in-progress', 'completed', 'cancelled')),
+      due_date INTEGER,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_tasks_client ON tasks(client_id);
+    CREATE INDEX IF NOT EXISTS idx_tasks_assigned ON tasks(assigned_email);
+
+    CREATE TABLE IF NOT EXISTS task_comments (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      author_email TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_task_comments_task ON task_comments(task_id);
   `);
 
   _db = db;
@@ -171,4 +195,25 @@ export type ClientRow = {
   sections_ct: string | null;
   created_at: number;
   updated_at: number;
+};
+
+export type TaskRow = {
+  id: string;
+  client_id: string;
+  assigned_email: string;
+  creator_email: string;
+  title: string;
+  description: string | null;
+  status: "pending" | "in-progress" | "completed" | "cancelled";
+  due_date: number | null;
+  created_at: number;
+  updated_at: number;
+};
+
+export type TaskCommentRow = {
+  id: string;
+  task_id: string;
+  author_email: string;
+  content: string;
+  created_at: number;
 };
