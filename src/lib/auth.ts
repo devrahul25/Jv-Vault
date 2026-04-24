@@ -75,6 +75,17 @@ export function createSession(
   const expiresAt = Date.now() + TTL_MIN * 60 * 1000;
 
   const db = getDb();
+  
+  if (email) {
+    // Upsert member
+    const existing = db.prepare("SELECT id FROM members WHERE email = ?").get(email) as any;
+    if (!existing) {
+      const memberId = `mem_${Date.now()}`;
+      db.prepare("INSERT INTO members (id, email, created_at, updated_at) VALUES (?, ?, ?, ?)")
+        .run(memberId, email, Date.now(), Date.now());
+    }
+  }
+
   db.prepare(
     `INSERT INTO sessions (token_hash, email, ip, key_b64, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)`
   ).run(tokenHash, email || null, ip || null, key.toString("base64"), expiresAt, Date.now());
