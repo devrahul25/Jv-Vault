@@ -40,7 +40,30 @@ const config: Config = {
       },
       boxShadow: {
         soft: "0 1px 2px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.25)",
+        highlight: "0 0 20px rgba(249, 115, 22, 0.15)",
       },
+      animation: {
+        "float": "float 6s ease-in-out infinite",
+        "pulse-subtle": "pulse-subtle 3s ease-in-out infinite",
+        "glow": "glow 4s ease-in-out infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "pulse-subtle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
+        glow: {
+          "0%, 100%": { opacity: "0.3" },
+          "50%": { opacity: "0.6" },
+        },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        }
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],

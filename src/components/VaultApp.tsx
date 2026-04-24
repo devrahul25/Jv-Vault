@@ -9,6 +9,7 @@ import ShareModal from "./ShareModal";
 import TasksList from "./TasksList";
 import MembersManager from "./MembersManager";
 import GlobalControls from "./GlobalControls";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function VaultApp() {
   const [activeTab, setActiveTab] = useState<"table" | "tasks" | "members" | "settings">("table");
@@ -245,85 +246,131 @@ export default function VaultApp() {
         )}
 
         <main className="flex-1 overflow-auto">
-          {activeTab === "members" ? (
-            <MembersManager />
-          ) : activeTab === "settings" ? (
-            <GlobalControls />
-          ) : (
-            <div className="px-6 py-10 sm:px-12">
-              <div className="mx-auto w-full max-w-[1400px]">
-                <header className="mb-8">
-                  <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3 mb-6">
-                    🌐 {currentWs?.name || "Workspace"}
-                  </h1>
-                  <div className="flex items-center justify-between border-b border-ink-800 pb-2 text-sm text-ink-300">
-                    <div className="flex items-center gap-6">
-                       <button 
-                        onClick={() => setActiveTab("table")}
-                        className={`pb-2 -mb-2 font-medium flex items-center gap-2 transition-all ${
-                         activeTab === "table" ? "text-white border-b-2 border-white" : "text-ink-500 hover:text-ink-300"
-                        }`}
-                       >
-                         <span>🗂</span> Table
-                       </button>
-                       <button 
-                        onClick={() => setActiveTab("tasks")}
-                        className={`pb-2 -mb-2 font-medium flex items-center gap-2 transition-all ${
-                         activeTab === "tasks" ? "text-white border-b-2 border-white" : "text-ink-500 hover:text-ink-300"
-                        }`}
-                       >
-                         <span>✅</span> Tasks
-                       </button>
-                       {!canEdit && activeTab === "table" && (
+          <AnimatePresence mode="wait">
+            {activeTab === "members" ? (
+              <motion.div 
+                key="members"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="h-full"
+              >
+                <MembersManager />
+              </motion.div>
+            ) : activeTab === "settings" ? (
+              <motion.div 
+                key="settings"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full"
+              >
+                <GlobalControls />
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="workspace-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="px-6 py-10 sm:px-12"
+              >
+                <div className="mx-auto w-full max-w-[1400px]">
+                  <header className="mb-8">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-white flex items-center gap-3 mb-6">
+                      🌐 {currentWs?.name || "Workspace"}
+                    </h1>
+                    <div className="flex items-center justify-between border-b border-ink-800 pb-2 text-sm text-ink-300">
+                      <div className="flex items-center gap-6">
                          <button 
-                            onClick={requestEditAccess}
-                            disabled={requested}
-                            className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 disabled:opacity-50"
+                          onClick={() => setActiveTab("table")}
+                          className={`pb-2 -mb-2 font-medium flex items-center gap-2 transition-all ${
+                           activeTab === "table" ? "text-white border-b-2 border-white" : "text-ink-500 hover:text-ink-300"
+                          }`}
                          >
-                           {requested ? "Request pending..." : "Request edit access"}
+                           <span>🗂</span> Table
                          </button>
-                       )}
-                    </div>
-                    {activeTab === "table" && (
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-64 text-ink-300">
-                          <input
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search…"
-                            className="w-full rounded-md border border-ink-800 bg-ink-900 px-8 py-1 text-sm text-white placeholder:text-ink-400 focus:border-ink-600 focus:outline-none"
-                          />
-                          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400">
-                            ⌕
-                          </span>
-                        </div>
+                         <button 
+                          onClick={() => setActiveTab("tasks")}
+                          className={`pb-2 -mb-2 font-medium flex items-center gap-2 transition-all ${
+                           activeTab === "tasks" ? "text-white border-b-2 border-white" : "text-ink-500 hover:text-ink-300"
+                          }`}
+                         >
+                           <span>✅</span> Tasks
+                         </button>
+                         {!canEdit && activeTab === "table" && (
+                           <button 
+                              onClick={requestEditAccess}
+                              disabled={requested}
+                              className="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 disabled:opacity-50"
+                           >
+                             {requested ? "Request pending..." : "Request edit access"}
+                           </button>
+                         )}
                       </div>
-                    )}
-                  </div>
-                </header>
+                      {activeTab === "table" && (
+                        <div className="flex items-center gap-4">
+                          <div className="relative w-64 text-ink-300">
+                            <input
+                              value={query}
+                              onChange={(e) => setQuery(e.target.value)}
+                              placeholder="Search…"
+                              className="w-full rounded-md border border-ink-800 bg-ink-900 px-8 py-1 text-sm text-white placeholder:text-ink-400 focus:border-ink-600 focus:outline-none"
+                            />
+                            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400">
+                              ⌕
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </header>
 
-                {loading ? (
-                  <div className="text-ink-400">Loading…</div>
-                ) : activeTab === "table" ? (
-                  <TopTable
-                    columns={columns}
-                    clients={filtered}
-                    onColumnsChange={saveColumns}
-                    onAddClient={addClient}
-                    onOpenClient={(id) => setOpenId(id)}
-                    onPatchClient={patchClient}
-                    onDeleteClient={deleteClient}
-                    readOnly={!canEdit}
-                  />
-                ) : (
-                  <TasksList 
-                    isMaster={user?.isMaster || false} 
-                    userEmail={user?.email || ""}
-                  />
-                )}
-              </div>
-            </div>
-          )}
+                  {loading ? (
+                    <div className="text-ink-400">Loading…</div>
+                  ) : (
+                    <AnimatePresence mode="wait">
+                      {activeTab === "table" ? (
+                        <motion.div
+                          key="table-ui"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <TopTable
+                            columns={columns}
+                            clients={filtered}
+                            onColumnsChange={saveColumns}
+                            onAddClient={addClient}
+                            onOpenClient={(id) => setOpenId(id)}
+                            onPatchClient={patchClient}
+                            onDeleteClient={deleteClient}
+                            readOnly={!canEdit}
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="tasks-ui"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <TasksList 
+                            isMaster={user?.isMaster || false} 
+                            userEmail={user?.email || ""}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 
@@ -337,17 +384,22 @@ export default function VaultApp() {
           />
         )}
 
-        {/* Floating Success Toast */}
+      <AnimatePresence>
         {toast && (
-          <div className="fixed bottom-8 right-8 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
-            <div className={`flex items-center gap-3 rounded-lg px-4 py-3 shadow-2xl ${
-              toast.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"
-            }`}>
-              <span className="text-xl">Check</span>
-              <span className="font-medium">{toast.message}</span>
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.3 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+            className="fixed bottom-8 right-8 z-[100]"
+          >
+            <div className={`flex items-center gap-3 rounded-2xl px-6 py-4 shadow-2xl ${
+              toast.type === "success" ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
+            } border-4 border-white/10 ring-1 ring-black/20`}>
+              <span className="font-black tracking-tight">{toast.message}</span>
             </div>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
         {/* Super Admin Top Banner Notification */}
         {user?.isMaster && pendingRequests.length > 0 && (
