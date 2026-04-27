@@ -130,7 +130,9 @@ export default function EditableCell({
     }
     return (
       <input
-        ref={(el) => (inputRef.current = el)}
+        ref={(el) => {
+          inputRef.current = el;
+        }}
         type={type === "date" ? "date" : type === "email" ? "email" : "text"}
         value={local}
         onChange={(e) => setLocal(e.target.value)}
