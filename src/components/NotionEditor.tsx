@@ -86,7 +86,7 @@ export default function NotionEditor({
         onBlur={handleBlur}
         tabIndex={-1}
     >
-      <BubbleMenu editor={editor} tippyOptions={{ duration: 100, zIndex: 9999 }}>
+      <BubbleMenu editor={editor}>
         <div className="flex bg-ink-800 border border-ink-700 shadow-xl rounded-lg overflow-hidden text-xs text-ink-100 items-center p-1 gap-0.5 z-[9999]">
           <button 
              onClick={() => editor.chain().focus().toggleBold().run()} 
