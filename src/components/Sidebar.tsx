@@ -16,8 +16,8 @@ export default function Sidebar({
   onAddWorkspace: () => void;
   onDeleteWorkspace: (id: string) => void;
   user?: any;
-  activeTab: string;
-  onSelectTab: (tab: string) => void;
+  activeTab: "table" | "tasks" | "members" | "settings";
+  onSelectTab: (tab: "table" | "tasks" | "members" | "settings") => void;
 }) {
   const currentWs = workspaces.find((w) => w.id === currentWorkspace);
   

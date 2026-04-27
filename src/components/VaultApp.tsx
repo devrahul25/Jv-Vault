@@ -233,7 +233,7 @@ export default function VaultApp() {
         onDeleteWorkspace={handleDeleteWorkspace}
         user={user}
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={(tab) => setActiveTab(tab)}
       />
       <div className="flex-1 flex flex-col min-w-0 bg-[#121210]">
         {!["members", "settings"].includes(activeTab) && (
