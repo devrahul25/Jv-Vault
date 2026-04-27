@@ -77,7 +77,7 @@ export default function Sidebar({
         <div>
           <div className="px-2 py-1 text-[11px] font-semibold text-ink-400 hover:text-ink-200 cursor-pointer group flex justify-between items-center">
             Private Workspaces
-            <button as="span" onClick={onAddWorkspace} className="opacity-0 group-hover:opacity-100 p-1 hover:text-white">+</button>
+            <button onClick={onAddWorkspace} className="opacity-0 group-hover:opacity-100 p-1 hover:text-white">+</button>
           </div>
           <div className="space-y-0.5 mt-1">
             <AnimatePresence initial={true}>
