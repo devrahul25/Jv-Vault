@@ -37,7 +37,7 @@ export async function GET() {
           seed.name,
           idx,
           encrypt(JSON.stringify(seed.attrs || {}), key),
-          encrypt(JSON.stringify(DEFAULT_SECTIONS), key),
+          encrypt(JSON.stringify(seed.sections || DEFAULT_SECTIONS), key),
           Date.now(),
           Date.now()
         );

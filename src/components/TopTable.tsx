@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { ColumnDef, ClientRecord } from "@/lib/vault";
 import EditableCell from "./EditableCell";
 import ColumnMenu from "./ColumnMenu";
@@ -129,14 +129,10 @@ export default function TopTable({
               client={c}
               columns={columns}
               nameWidth={NAME_WIDTH}
-              onOpen={() => onOpenClient(c.id)}
-              onRename={(name) => onPatchClient(c.id, { name })}
-              onCell={(colId, value) =>
-                onPatchClient(c.id, { attrs: { ...c.attrs, [colId]: value } })
-              }
-              onDelete={() => {
-                if (confirm(`Delete client "${c.name}" and all its data?`)) onDeleteClient(c.id);
-              }}
+              onOpen={onOpenClient}
+              onRename={onPatchClient}
+              onCell={onPatchClient}
+              onDelete={onDeleteClient}
               readOnly={readOnly}
             />
           ))}
@@ -161,7 +157,7 @@ export default function TopTable({
   );
 }
 
-function TopRow({
+const TopRow = memo(function TopRow({
   client,
   columns,
   nameWidth,
@@ -174,13 +170,29 @@ function TopRow({
   client: ClientRecord;
   columns: ColumnDef[];
   nameWidth: number;
-  onOpen: () => void;
-  onRename: (name: string) => void;
-  onCell: (columnId: string, value: string) => void;
-  onDelete: () => void;
+  onOpen: (id: string) => void;
+  onRename: (id: string, patch: Partial<ClientRecord>) => void;
+  onCell: (id: string, patch: Partial<ClientRecord>) => void;
+  onDelete: (id: string) => void;
   readOnly?: boolean;
 }) {
   const [hover, setHover] = useState(false);
+
+  const handleRename = useCallback((name: string) => {
+    onRename(client.id, { name });
+  }, [client.id, onRename]);
+
+  const handleCell = useCallback((columnId: string, value: string) => {
+    onCell(client.id, { attrs: { ...client.attrs, [columnId]: value } });
+  }, [client.id, client.attrs, onCell]);
+
+  const handleDelete = useCallback(() => {
+    if (confirm(`Delete client "${client.name}" and all its data?`)) onDelete(client.id);
+  }, [client.id, client.name, onDelete]);
+
+  const handleOpen = useCallback(() => {
+    onOpen(client.id);
+  }, [client.id, onOpen]);
 
   return (
     <tr
@@ -198,7 +210,7 @@ function TopRow({
               value={client.name}
               type="text"
               placeholder="Untitled client"
-              onChange={onRename}
+              onChange={handleRename}
               readOnly={readOnly}
             />
           </div>
@@ -209,7 +221,7 @@ function TopRow({
           >
             <div className="flex items-center gap-1 rounded-md bg-ink-900/80 px-1 py-0.5 shadow-soft">
               <button
-                onClick={onOpen}
+                onClick={handleOpen}
                 className="rounded px-2 py-0.5 text-[11px] font-medium text-ink-100 hover:bg-ink-700"
                 title="Open detail panel"
               >
@@ -217,7 +229,7 @@ function TopRow({
               </button>
               {!readOnly && (
                 <button
-                  onClick={onDelete}
+                  onClick={handleDelete}
                   className="rounded px-1.5 py-0.5 text-[11px] text-red-400 hover:bg-red-500/10"
                   title="Delete client"
                 >
@@ -238,7 +250,7 @@ function TopRow({
             value={client.attrs?.[c.id] || ""}
             type={c.type}
             placeholder={c.name}
-            onChange={(v) => onCell(c.id, v)}
+            onChange={(v) => handleCell(c.id, v)}
             readOnly={readOnly}
           />
         </td>
@@ -246,7 +258,12 @@ function TopRow({
       <td className="w-10" />
     </tr>
   );
-}
+}, (prev, next) => {
+  return prev.client === next.client && 
+         prev.columns === next.columns && 
+         prev.readOnly === next.readOnly &&
+         prev.nameWidth === next.nameWidth;
+});
 
 function TypeIcon({ type }: { type: string }) {
   const m: Record<string, string> = {
