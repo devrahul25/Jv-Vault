@@ -100,6 +100,84 @@ export default function VaultApp() {
     return user.roles?.[currentWorkspace] === "edit" || user.roles?.[currentWorkspace] === "full";
   }, [user, currentWorkspace]);
 
+  // One-time data injection for "Jai Veeru Website & Hosting"
+  useEffect(() => {
+    if (clients.length === 0 || !canEdit || !user?.isMaster) return;
+    const target = clients.find(c => c.name.includes("Jai Veeru Website & Hosting"));
+    if (!target) return;
+    
+    // Check if already injected
+    if (target.sections?.some(s => s.title === "JV Domain")) return;
+    
+    const randId = (prefix: string) => `${prefix}_${Math.random().toString(36).substring(2, 9)}`;
+    
+    const jvDomainSection: Section = {
+      id: randId("sec"),
+      title: "JV Domain",
+      columns: [
+        { id: randId("col"), name: "URL", type: "url", width: 200 },
+        { id: randId("col"), name: "Domain", type: "text", width: 140 },
+        { id: randId("col"), name: "Domain Expiry", type: "date", width: 180 },
+        { id: randId("col"), name: "Days Left", type: "text", width: 100 },
+        { id: randId("col"), name: "JV Hosting", type: "text", width: 140 },
+        { id: randId("col"), name: "Login", type: "email", width: 220 },
+        { id: randId("col"), name: "password4", type: "secret", width: 180 },
+      ],
+      rows: []
+    };
+    
+    const h1 = jvDomainSection.columns.map(c => c.id);
+    jvDomainSection.rows = [
+      { id: randId("row"), cells: { [h1[0]]: "jaiveeru.co.in", [h1[1]]: "Hostinger", [h1[2]]: "October 18, 2024 12:00 PM", [h1[3]]: "-557", [h1[4]]: "Hostinger", [h1[5]]: "jaiveeruwebsite@gmail.com", [h1[6]]: "J@iVeeruTe@m@" } },
+      { id: randId("row"), cells: { [h1[0]]: "jvcreatives.com", [h1[1]]: "Web Miles", [h1[2]]: "August 7, 2027 12:00 PM", [h1[3]]: "465", [h1[4]]: "Miles Web", [h1[5]]: "jaiveeruwebsite@gmail.com", [h1[6]]: "" } },
+      { id: randId("row"), cells: { [h1[0]]: "jvcreatives.in", [h1[1]]: "Hostinger", [h1[2]]: "June 26, 2026 12:00 PM", [h1[3]]: "58", [h1[4]]: "", [h1[5]]: "jaiveeruwebsite@gmail.com", [h1[6]]: "" } },
+      { id: randId("row"), cells: { [h1[0]]: "jaiveeru.site", [h1[1]]: "Hostinger", [h1[2]]: "June 26, 2024 12:00 PM", [h1[3]]: "-671", [h1[4]]: "Red Hosting", [h1[5]]: "jaiveeruwebsite@gmail.com", [h1[6]]: "" } },
+      { id: randId("row"), cells: { [h1[0]]: "jaiveerucreatives.com", [h1[1]]: "Hostinger", [h1[2]]: "April 25, 2026 12:00 PM", [h1[3]]: "-3", [h1[4]]: "Red Hosting", [h1[5]]: "jaiveeruwebsite@gmail.com", [h1[6]]: "" } },
+      { id: randId("row"), cells: { [h1[0]]: "jaiveerucreatives.in", [h1[1]]: "Hostinger", [h1[2]]: "April 25, 2026 12:00 PM", [h1[3]]: "-3", [h1[4]]: "Red Hosting", [h1[5]]: "jaiveeruwebsite@gmail.com", [h1[6]]: "" } },
+    ];
+    
+    const jvHostingSection: Section = {
+      id: randId("sec"),
+      title: "JV Hosting",
+      columns: [
+        { id: randId("col"), name: "Account", type: "text", width: 140 },
+        { id: randId("col"), name: "JV Domain", type: "text", width: 240 },
+        { id: randId("col"), name: "Renew Date", type: "date", width: 160 },
+        { id: randId("col"), name: "Days Left", type: "text", width: 100 },
+        { id: randId("col"), name: "Login", type: "email", width: 220 },
+        { id: randId("col"), name: "Pass", type: "secret", width: 180 },
+      ],
+      rows: []
+    };
+    
+    const h2 = jvHostingSection.columns.map(c => c.id);
+    jvHostingSection.rows = [
+      { id: randId("row"), cells: { [h2[0]]: "Hostinger", [h2[1]]: "jaiveeru.co.in", [h2[2]]: "October 4, 2024", [h2[3]]: "-572", [h2[4]]: "jaiveeruwebsite@gmail.com", [h2[5]]: "Google" } },
+      { id: randId("row"), cells: { [h2[0]]: "Miles Web", [h2[1]]: "jvcreatives.com", [h2[2]]: "August 25, 2024", [h2[3]]: "-612", [h2[4]]: "jaiveeruwebsite@gmail.com", [h2[5]]: "Ganesha@4321" } },
+      { id: randId("row"), cells: { [h2[0]]: "Red Hosting", [h2[1]]: "jaiveeru.site\njaiveerucreatives.in\njaiveerucreatives.com", [h2[2]]: "May 25, 2024", [h2[3]]: "-704", [h2[4]]: "jaiveeruwebsite@gmail.com", [h2[5]]: "JV@9935" } },
+    ];
+    
+    const otherLoginsSection: Section = {
+      id: randId("sec"),
+      title: "Other Logins",
+      columns: [
+        { id: randId("col"), name: "Platform", type: "text", width: 160 },
+        { id: randId("col"), name: "Login", type: "text", width: 220 },
+        { id: randId("col"), name: "Password", type: "secret", width: 200 }
+      ],
+      rows: []
+    };
+    
+    const h3 = otherLoginsSection.columns.map(c => c.id);
+    otherLoginsSection.rows = [
+      { id: randId("row"), cells: { [h3[0]]: "Elementor", [h3[1]]: "jvteam@jaiveeru.co.in", [h3[2]]: "Ganesha@4321" } },
+      { id: randId("row"), cells: { [h3[0]]: "Wordpress", [h3[1]]: "admin", [h3[2]]: "JV@2023-24" } },
+    ];
+    
+    const updatedSections = [...(target.sections || []), jvDomainSection, jvHostingSection, otherLoginsSection];
+    patchClient(target.id, { sections: updatedSections });
+  }, [clients, canEdit, user]);
+
   const openClient = useMemo(
     () => clients.find((c) => c.id === openId) || null,
     [clients, openId]
