@@ -32,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { status } = body;
+  const { status, assignedEmail } = body;
 
   const db = getDb();
   const task = db.prepare("SELECT assigned_email FROM tasks WHERE id = ?").get(params.id) as TaskRow;
@@ -44,8 +44,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  db.prepare("UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?")
-    .run(status, Date.now(), params.id);
+  if (status) {
+    db.prepare("UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?")
+      .run(status, Date.now(), params.id);
+  }
+
+  if (assignedEmail && isMaster) {
+    db.prepare("UPDATE tasks SET assigned_email = ?, updated_at = ? WHERE id = ?")
+      .run(assignedEmail, Date.now(), params.id);
+  }
 
   return NextResponse.json({ success: true });
 }

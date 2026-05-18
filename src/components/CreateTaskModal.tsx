@@ -12,8 +12,12 @@ import {
   AlertCircle,
   Mail,
   CheckCircle2,
-  ListTodo
+  ChevronDown,
+  ListTodo,
+  Image as ImageIcon,
+  Link as LinkIcon
 } from "lucide-react";
+import NotionEditor from "./NotionEditor";
 
 export default function CreateTaskModal({ 
   onClose, 
@@ -23,6 +27,7 @@ export default function CreateTaskModal({
   onCreated: () => void 
 }) {
   const [clients, setClients] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +41,7 @@ export default function CreateTaskModal({
 
   useEffect(() => {
     fetchClients();
+    fetchMembers();
   }, []);
 
   async function fetchClients() {
@@ -45,6 +51,16 @@ export default function CreateTaskModal({
       if (data.clients) setClients(data.clients);
     } catch (err) {
       console.error("Failed to fetch clients", err);
+    }
+  }
+
+  async function fetchMembers() {
+    try {
+      const res = await fetch("/api/members");
+      const data = await res.json();
+      if (data.members) setMembers(data.members);
+    } catch (err) {
+      console.error("Failed to fetch members", err);
     }
   }
 
@@ -110,40 +126,49 @@ export default function CreateTaskModal({
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-ink-300 uppercase tracking-widest flex items-center gap-2">
               <Briefcase className="w-3.5 h-3.5" />
               Relate to Client*
             </label>
-            <select
-              required
-              className="w-full px-4 py-3 bg-ink-800 border border-ink-700 rounded-xl text-sm text-ink-100 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all appearance-none cursor-pointer"
-              value={formData.clientId}
-              onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-            >
-              <option value="">Select a client...</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                required
+                className="w-full px-4 py-3 bg-ink-800 border border-ink-700 rounded-xl text-sm text-ink-100 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                value={formData.clientId}
+                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+              >
+                <option value="">Select a client...</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-500 pointer-events-none" />
+            </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-ink-300 uppercase tracking-widest flex items-center gap-2">
               <Mail className="w-3.5 h-3.5" />
-              Assign to Member Email*
+              Assign to Employee*
             </label>
-            <input
-              type="email"
-              required
-              placeholder="member@example.com"
-              className="w-full px-4 py-3 bg-ink-800 border border-ink-700 rounded-xl text-sm text-ink-100 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all"
-              value={formData.assignedEmail}
-              onChange={(e) => setFormData({ ...formData, assignedEmail: e.target.value })}
-            />
+            <div className="relative">
+              <select
+                required
+                className="w-full px-4 py-3 bg-ink-800 border border-ink-700 rounded-xl text-sm text-ink-100 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all appearance-none cursor-pointer"
+                value={formData.assignedEmail}
+                onChange={(e) => setFormData({ ...formData, assignedEmail: e.target.value })}
+              >
+                <option value="">Select an employee...</option>
+                {members.map(m => (
+                  <option key={m.id} value={m.email}>{m.email} {m.name ? `(${m.name})` : ""}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-500 pointer-events-none" />
+            </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-ink-300 uppercase tracking-widest flex items-center gap-2">
               <Type className="w-3.5 h-3.5" />
               Task Title*
             </label>
@@ -158,21 +183,26 @@ export default function CreateTaskModal({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-ink-300 uppercase tracking-widest flex items-center gap-2">
               <AlignLeft className="w-3.5 h-3.5" />
               Description
             </label>
-            <textarea
-              placeholder="Specify requirements or steps..."
-              rows={3}
-              className="w-full px-4 py-3 bg-ink-800 border border-ink-700 rounded-xl text-sm text-ink-100 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-500 transition-all resize-none"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
+            <div className="min-h-[80px] w-full bg-ink-800 border border-ink-700 rounded-xl focus-within:ring-2 focus-within:ring-accent-500/20 focus-within:border-accent-500 transition-all overflow-hidden flex flex-col">
+              <NotionEditor 
+                value={formData.description}
+                onChange={(val) => setFormData({ ...formData, description: val })}
+                onCommit={() => {}}
+                onCancel={() => {}}
+              />
+            </div>
+            <div className="flex items-center gap-4 px-2 py-1 text-[10px] text-ink-500 font-bold uppercase tracking-wider">
+               <span className="flex items-center gap-1"><LinkIcon className="w-3 h-3" /> Select text for links</span>
+               <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3" /> Select text for images</span>
+            </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-ink-500 uppercase tracking-widest flex items-center gap-2">
+            <label className="text-xs font-bold text-ink-400 uppercase tracking-widest flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5" />
               Due Date
             </label>

@@ -9,6 +9,7 @@ import ShareModal from "./ShareModal";
 import TasksList from "./TasksList";
 import MembersManager from "./MembersManager";
 import GlobalControls from "./GlobalControls";
+import ProfileModal from "./ProfileModal";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function VaultApp() {
@@ -23,6 +24,7 @@ export default function VaultApp() {
   const [showShare, setShowShare] = useState(false);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [requested, setRequested] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const [workspaces, setWorkspaces] = useState<any[]>([]);
@@ -309,6 +311,7 @@ export default function VaultApp() {
         }}
         onAddWorkspace={handleAddWorkspace}
         onDeleteWorkspace={handleDeleteWorkspace}
+        onOpenProfile={() => setShowProfile(true)}
         user={user}
         activeTab={activeTab}
         onSelectTab={(tab) => setActiveTab(tab)}
@@ -522,6 +525,14 @@ export default function VaultApp() {
           onClose={() => setShowShare(false)} 
         />
       )}
+
+      {showProfile && (
+        <ProfileModal 
+          user={user}
+          onClose={() => setShowProfile(false)}
+          onUpdate={(updated) => setUser({ ...user, ...updated })}
+        />
+      )}
     </div>
   );
 }
@@ -577,9 +588,9 @@ function TopBar({
         <button
           onClick={onLogout}
           className="rounded px-2.5 py-1 text-xs text-ink-400 hover:text-ink-100 hover:bg-ink-800"
-          title="Lock vault"
+          title="Logout from vault"
         >
-          Lock
+          Logout
         </button>
       </div>
     </div>

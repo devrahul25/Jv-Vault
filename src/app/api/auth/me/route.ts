@@ -11,8 +11,16 @@ export async function GET() {
 
   const db = getDb();
   let roles: Record<string, string> = {};
+  let name = null;
+  let avatar = null;
   
   if (session.email) {
+    const member = db.prepare("SELECT name, avatar FROM members WHERE email = ?").get(session.email) as any;
+    if (member) {
+      name = member.name;
+      avatar = member.avatar;
+    }
+
     const permissions = db.prepare(`
       SELECT p.workspace_id, p.role
       FROM workspace_permissions p
@@ -27,6 +35,8 @@ export async function GET() {
 
   return NextResponse.json({
     email: session.email,
+    name,
+    avatar,
     ip: session.ip,
     isMaster: session.email === "team@jaiveeru.co.in",
     roles

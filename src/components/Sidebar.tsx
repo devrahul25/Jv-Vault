@@ -6,6 +6,7 @@ export default function Sidebar({
   onSelectWorkspace,
   onAddWorkspace,
   onDeleteWorkspace,
+  onOpenProfile,
   user,
   activeTab,
   onSelectTab,
@@ -15,6 +16,7 @@ export default function Sidebar({
   onSelectWorkspace: (id: string) => void;
   onAddWorkspace: () => void;
   onDeleteWorkspace: (id: string) => void;
+  onOpenProfile: () => void;
   user?: any;
   activeTab: "table" | "tasks" | "members" | "settings";
   onSelectTab: (tab: "table" | "tasks" | "members" | "settings") => void;
@@ -25,24 +27,29 @@ export default function Sidebar({
     <div className="flex h-screen w-64 flex-col border-r border-ink-800 bg-ink-950 text-ink-300">
       {/* Profile Section */}
       <motion.div 
+        onClick={onOpenProfile}
         whileHover={{ backgroundColor: "rgba(32, 31, 29, 0.5)" }}
-        className="relative mb-4 flex items-center gap-2 px-4 py-4 cursor-pointer overflow-hidden"
+        className="relative mb-4 flex items-center gap-3 px-4 py-4 cursor-pointer overflow-hidden transition-colors"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_3s_infinite]" />
         <motion.div 
-          whileHover={{ rotate: 5 }}
-          className="flex h-6 w-6 items-center justify-center rounded bg-accent-600 text-[11px] font-bold text-white shadow-inner ring-1 ring-white/20"
+          whileHover={{ rotate: 5, scale: 1.05 }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-xs font-black text-white shadow-lg ring-2 ring-white/10 overflow-hidden"
         >
-          {user?.email?.charAt(0).toUpperCase() || "J"}
+          {user?.avatar ? (
+            <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "J"
+          )}
         </motion.div>
         <div className="flex-1 overflow-hidden">
-          <div className="truncate text-sm font-bold text-ink-100">{user?.email || "JV Vault"}</div>
-          <div className="truncate text-[10px] uppercase font-bold text-accent-500 tracking-wider flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse" />
+          <div className="truncate text-sm font-black text-ink-100">{user?.name || user?.email || "JV Vault"}</div>
+          <div className="truncate text-[10px] uppercase font-black text-accent-500 tracking-[0.1em] flex items-center gap-1.5 mt-0.5 opacity-80">
+            <span className="w-1 h-1 rounded-full bg-accent-500" />
             {user?.isMaster ? "Super Admin" : "Editor Access"}
           </div>
         </div>
-        <span className="text-ink-600 text-xs translate-y-px">⇕</span>
+        <span className="text-ink-600 text-[10px] opacity-40 group-hover:opacity-100">⇕</span>
       </motion.div>
 
       <div className="flex-1 overflow-y-auto px-2 space-y-6 text-sm">

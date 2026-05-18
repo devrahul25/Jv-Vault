@@ -13,7 +13,8 @@ import {
   AlertCircle,
   MessageCircle,
   UserCheck,
-  History
+  History,
+  ChevronDown
 } from "lucide-react";
 
 interface Comment {
@@ -41,14 +42,17 @@ export default function TaskDrawer({
   task, 
   onClose, 
   userEmail,
+  isMaster,
   onStatusUpdate 
 }: { 
   task: Task, 
   onClose: () => void, 
   userEmail: string,
+  isMaster: boolean,
   onStatusUpdate: () => void
 }) {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -56,7 +60,8 @@ export default function TaskDrawer({
 
   useEffect(() => {
     fetchComments();
-  }, [task.id]);
+    if (isMaster) fetchMembers();
+  }, [task.id, isMaster]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,6 +74,16 @@ export default function TaskDrawer({
       if (data.comments) setComments(data.comments);
     } catch (err) {
       console.error("Failed to fetch comments", err);
+    }
+  }
+
+  async function fetchMembers() {
+    try {
+      const res = await fetch("/api/members");
+      const data = await res.json();
+      if (data.members) setMembers(data.members);
+    } catch (err) {
+      console.error("Failed to fetch members", err);
     }
   }
 
@@ -112,6 +127,25 @@ export default function TaskDrawer({
     }
   }
 
+  async function updateAssignee(newEmail: string) {
+    if (newEmail === task.assigned_email) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignedEmail: newEmail })
+      });
+      if (res.ok) {
+        onStatusUpdate();
+      }
+    } catch (err) {
+      console.error("Failed to update assignee", err);
+    } finally {
+      setUpdating(false);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
       <div className="w-full max-w-lg h-full bg-ink-900 border-l border-ink-700 animate-in slide-in-from-right duration-500 flex flex-col shadow-2xl">
@@ -141,20 +175,39 @@ export default function TaskDrawer({
             <div className="space-y-4">
               <h1 className="text-2xl font-bold text-ink-100 leading-tight">{task.title}</h1>
               {task.description && (
-                <p className="text-ink-300 text-sm leading-relaxed bg-ink-800/40 p-4 rounded-xl border border-ink-700/50 italic">
-                  "{task.description}"
-                </p>
+                <div 
+                  className="text-ink-300 text-sm leading-relaxed bg-ink-800/40 p-4 rounded-xl border border-ink-700/50 prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: task.description }}
+                />
               )}
             </div>
 
             {/* Meta Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-ink-800/60 rounded-xl border border-ink-700/50">
-                <div className="text-[10px] text-ink-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <UserCheck className="w-3.5 h-3.5" />
-                  Assigned To
+                <div className="text-[10px] text-ink-500 font-bold uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <UserCheck className="w-3.5 h-3.5" />
+                    Assigned To
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-ink-200 truncate">{task.assigned_email}</div>
+                {isMaster ? (
+                  <div className="relative">
+                    <select 
+                      className="w-full bg-ink-900/50 border border-ink-700/50 rounded-lg pl-2 pr-8 py-1 text-xs text-ink-200 focus:outline-none focus:border-accent-500 transition-all cursor-pointer appearance-none"
+                      value={task.assigned_email}
+                      onChange={(e) => updateAssignee(e.target.value)}
+                      disabled={updating}
+                    >
+                      {members.map(m => (
+                        <option key={m.id} value={m.email}>{m.email}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-500 pointer-events-none" />
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium text-ink-200 truncate">{task.assigned_email}</div>
+                )}
               </div>
               <div className="p-4 bg-ink-800/60 rounded-xl border border-ink-700/50">
                 <div className="text-[10px] text-ink-500 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">

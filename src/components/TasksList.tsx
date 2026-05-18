@@ -203,6 +203,7 @@ export default function TasksList({ isMaster, userEmail }: { isMaster: boolean, 
         <TaskDrawer 
           task={selectedTask}
           userEmail={userEmail}
+          isMaster={isMaster}
           onClose={() => setSelectedTask(null)}
           onStatusUpdate={() => {
             fetchTasks();

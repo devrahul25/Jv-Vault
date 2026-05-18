@@ -80,7 +80,7 @@ export default function ClientDrawer({
           <div className="min-w-0 flex-1">
             <div className="text-[11px] uppercase tracking-wider text-ink-400">Client</div>
             <input
-              value={client.name}
+              value={(client.name || "").replace(/<[^>]*>?/gm, '')}
               onChange={(e) => !readOnly && onRename(e.target.value)}
               readOnly={readOnly}
               className={`mt-0.5 w-full bg-transparent text-xl font-semibold text-ink-100 outline-none ${readOnly ? "cursor-default" : ""}`}
